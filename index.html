@@ -234,251 +234,219 @@
         </div>
     </footer>
 
-    <script>
-        // Current date display
-        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-        });
+<!-- HEAD and BODY content remains the same until <script> tag... -->
 
-        // Sample news data (in a real app, this would come from a database)
-        // DOM Elements
-        const adminLogoutBtn = document.getElementById('adminLogoutBtn');
-        
-        let newsPosts = [
-            {
-                id: 1,
-                title: "National Conference on Technology Innovations",
-                content: "The annual technology conference will showcase breakthrough innovations from leading researchers and companies. Keynote speakers include industry pioneers.",
-                image: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/0bbf4c8a-8eea-4432-883c-722aeaabcfb3.png",
-                category: "technology",
-                date: "2023-11-15",
-                time: "10:30 AM"
-            },
-            {
-                id: 2,
-                title: "Sports League Announces Expansion Teams",
-                content: "The professional sports league confirmed the addition of two new franchise teams starting next season. The expansion draft will take place in December.",
-                image: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/06e5b741-abfe-45cf-8383-52065f9122b3.png",
-                category: "sports",
-                date: "2023-11-14",
-                time: "04:15 PM"
-            },
-            {
-                id: 3,
-                title: "Cultural Festival Draws Record Crowds",
-                content: "This year's cultural festival attracted over 50,000 visitors, celebrating traditional arts, music, and cuisine from diverse regions.",
-                image: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/cf3ebd6f-367b-4ca5-840d-bf5517d17d06.png",
-                category: "entertainment",
-                date: "2023-11-13",
-                time: "09:00 AM"
-            }
-        ];
+<script>
+    // ✅ Current date display
+    document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
 
-        // Admin password (in a real app, handle securely server-side)
-        const ADMIN_PASSWORD = "Sudeep@123";
+    let newsPosts = [];
 
-        // DOM Elements
-        const adminLoginBtn = document.getElementById('adminLoginBtn');
-        const adminModal = document.getElementById('adminModal');
-        const closeModalBtn = document.getElementById('closeModalBtn');
-        const adminSubmitBtn = document.getElementById('adminSubmitBtn');
-        const adminPassword = document.getElementById('adminPassword');
-        const postForm = document.getElementById('postForm');
-        const postNewsBtn = document.getElementById('postNewsBtn');
-        const newsTitle = document.getElementById('newsTitle');
-        const newsContent = document.getElementById('newsContent');
-        const newsImage = document.getElementById('newsImage');
-        const newsCategory = document.getElementById('newsCategory');
-        const postError = document.getElementById('postError');
-        const newsContainer = document.getElementById('newsContainer');
-        const newsFeedSection = document.getElementById('newsFeed');
-        const aboutSection = document.getElementById('aboutSection');
-        
-        // Navigation tabs
-        const homeTab = document.getElementById('homeTab');
-        const recentTab = document.getElementById('recentTab');
-        const dailyTab = document.getElementById('dailyTab');
-        const aboutTab = document.getElementById('aboutTab');
+    const ADMIN_PASSWORD = "Sudeep@123";
 
-        // Event Listeners
-        adminLoginBtn.addEventListener('click', openAdminModal);
-        adminLogoutBtn.addEventListener('click', () => {
-            adminPassword.disabled = false;
-            adminPassword.value = '';
-            adminLoginBtn.classList.remove('hidden');
-            adminLogoutBtn.classList.add('hidden');
-            postForm.classList.add('hidden');
-            displayNewsPosts(); // Refresh to hide delete buttons
-            closeAdminModal();
-        });
-        closeModalBtn.addEventListener('click', closeAdminModal);
-        adminSubmitBtn.addEventListener('click', handleAdminSubmit);
-        postNewsBtn.addEventListener('click', addNewPost);
-        
-        // Navigation tab events
-        homeTab.addEventListener('click', () => showSection('newsFeed'));
-        recentTab.addEventListener('click', () => showSection('newsFeed', filterRecent));
-        dailyTab.addEventListener('click', () => showSection('newsFeed', filterDaily));
-        aboutTab.addEventListener('click', () => showSection('aboutSection'));
+    const adminLoginBtn = document.getElementById('adminLoginBtn');
+    const adminLogoutBtn = document.getElementById('adminLogoutBtn');
+    const adminModal = document.getElementById('adminModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const adminSubmitBtn = document.getElementById('adminSubmitBtn');
+    const adminPassword = document.getElementById('adminPassword');
+    const postForm = document.getElementById('postForm');
+    const postNewsBtn = document.getElementById('postNewsBtn');
+    const newsTitle = document.getElementById('newsTitle');
+    const newsContent = document.getElementById('newsContent');
+    const newsImage = document.getElementById('newsImage');
+    const newsCategory = document.getElementById('newsCategory');
+    const postError = document.getElementById('postError');
+    const newsContainer = document.getElementById('newsContainer');
+    const newsFeedSection = document.getElementById('newsFeed');
+    const aboutSection = document.getElementById('aboutSection');
 
-        // Display news posts on page load
+    const homeTab = document.getElementById('homeTab');
+    const recentTab = document.getElementById('recentTab');
+    const dailyTab = document.getElementById('dailyTab');
+    const aboutTab = document.getElementById('aboutTab');
+
+    adminLoginBtn.addEventListener('click', openAdminModal);
+    adminLogoutBtn.addEventListener('click', () => {
+        adminPassword.disabled = false;
+        adminPassword.value = '';
+        adminLoginBtn.classList.remove('hidden');
+        adminLogoutBtn.classList.add('hidden');
+        postForm.classList.add('hidden');
+        fetchPosts();
+        closeAdminModal();
+    });
+    closeModalBtn.addEventListener('click', closeAdminModal);
+    adminSubmitBtn.addEventListener('click', handleAdminSubmit);
+    postNewsBtn.addEventListener('click', addNewPost);
+
+    homeTab.addEventListener('click', () => showSection('newsFeed'));
+    recentTab.addEventListener('click', () => showSection('newsFeed', filterRecent));
+    dailyTab.addEventListener('click', () => showSection('newsFeed', filterDaily));
+    aboutTab.addEventListener('click', () => showSection('aboutSection'));
+
+    window.addEventListener('DOMContentLoaded', fetchPosts);
+
+    async function fetchPosts() {
+        const res = await fetch('http://localhost:5000/posts');
+        newsPosts = await res.json();
         displayNewsPosts();
+    }
 
-        // Functions
-        function openAdminModal() {
-            adminModal.classList.remove('modal-closed');
-            adminModal.classList.add('modal-open');
-            postForm.classList.add('hidden');
-        }
+    function openAdminModal() {
+        adminModal.classList.remove('modal-closed');
+        adminModal.classList.add('modal-open');
+        postForm.classList.add('hidden');
+    }
 
-        function closeAdminModal() {
-            adminModal.classList.remove('modal-open');
-            adminModal.classList.add('modal-closed');
-            adminPassword.value = '';
+    function closeAdminModal() {
+        adminModal.classList.remove('modal-open');
+        adminModal.classList.add('modal-closed');
+        adminPassword.value = '';
+        postError.classList.add('hidden');
+        postForm.classList.add('hidden');
+        adminSubmitBtn.classList.remove('hidden');
+    }
+
+    function handleAdminSubmit() {
+        if (adminPassword.value === ADMIN_PASSWORD) {
+            postForm.classList.remove('hidden');
+            adminSubmitBtn.classList.add('hidden');
+            adminPassword.disabled = true;
             postError.classList.add('hidden');
-            postForm.classList.add('hidden');
-            adminSubmitBtn.classList.remove('hidden');
+            adminLoginBtn.classList.add('hidden');
+            adminLogoutBtn.classList.remove('hidden');
+            fetchPosts();
+        } else {
+            postError.textContent = 'Incorrect password.';
+            postError.classList.remove('hidden');
+        }
+    }
+
+    async function addNewPost() {
+        const title = newsTitle.value.trim();
+        const content = newsContent.value.trim();
+        const image = newsImage.value.trim();
+        const category = newsCategory.value;
+
+        if (!title || !content) {
+            postError.textContent = 'Please fill in all required fields.';
+            postError.classList.remove('hidden');
+            return;
         }
 
-        function handleAdminSubmit() {
-            if (adminPassword.value === ADMIN_PASSWORD) {
-                postForm.classList.remove('hidden');
-                adminSubmitBtn.classList.add('hidden');
-                adminPassword.disabled = true;
-                postError.classList.add('hidden');
-                adminLoginBtn.classList.add('hidden');
-                adminLogoutBtn.classList.remove('hidden');
-            } else {
-                postError.textContent = 'Incorrect password. Please try again.';
-                postError.classList.remove('hidden');
-            }
-        }
+        const postData = {
+            title,
+            content,
+            image: image || 'https://via.placeholder.com/400x200',
+            category
+        };
 
-        function addNewPost() {
-            const title = newsTitle.value.trim();
-            const content = newsContent.value.trim();
-            const image = newsImage.value.trim();
-            const category = newsCategory.value;
-            
-            if (!title || !content) {
-                postError.textContent = 'Please fill in all required fields.';
-                postError.classList.remove('hidden');
-                return;
-            }
+        const res = await fetch('http://localhost:5000/posts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(postData)
+        });
 
-            const currentDate = new Date();
-            const newPost = {
-                id: newsPosts.length + 1,
-                title,
-                content,
-                image: image || 'https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/5c91b976-a5d6-4663-9991-8bd87f65d837.png',
-                category,
-                date: currentDate.toISOString().split('T')[0],
-                time: currentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            };
-
-            newsPosts.unshift(newPost); // Add new post to beginning of array
-            displayNewsPosts();
-            
-            // Reset form
+        if (res.ok) {
+            await fetchPosts();
+            alert('News post added successfully!');
             newsTitle.value = '';
             newsContent.value = '';
             newsImage.value = '';
             newsCategory.value = 'general';
             postError.classList.add('hidden');
-            
-            // Show success message
-            alert('News post added successfully!');
+        } else {
+            alert('Failed to add post');
         }
+    }
 
-        function displayNewsPosts(posts = newsPosts) {
-            newsContainer.innerHTML = '';
-            
-            posts.forEach(post => {
-                const card = document.createElement('div');
-                card.className = 'news-card bg-white rounded-xl shadow-md overflow-hidden';
-                
-                const dateTime = `${post.date} at ${post.time}`;
-                const categoryClasses = {
-                    'general': 'bg-gray-100 text-gray-800',
-                    'politics': 'bg-blue-100 text-blue-800',
-                    'sports': 'bg-green-100 text-green-800',
-                    'technology': 'bg-purple-100 text-purple-800',
-                    'entertainment': 'bg-pink-100 text-pink-800'
-                };
-                
-                card.innerHTML = `
-                    <img src="${post.image}" alt="${post.title} - news article cover image showing ${post.category} content" class="w-full h-48 object-cover">
-                    <div class="p-6">
-                        <div class="flex justify-between items-start mb-2">
-                            <span class="tag ${categoryClasses[post.category] || ''}">${post.category.charAt(0).toUpperCase() + post.category.slice(1)}</span>
-                            <span class="text-xs text-gray-500">${dateTime}</span>
-                        </div>
-                        <h3 class="text-xl font-semibold mb-2">${post.title}</h3>
-                        <p class="text-gray-600 mb-4">${post.content}</p>
-                        ${adminPassword.disabled ? `${adminPassword.disabled ? `<button onclick="deletePost(${post.id})" class="delete-post-btn mt-2 bg-red-500 text-white px-3 py-1 rounded-md text-sm hover:bg-red-600">
-                            <i class="fas fa-trash mr-1"></i> Delete
-                        </button>` : ''}` : ''}
+    function displayNewsPosts(posts = newsPosts) {
+        newsContainer.innerHTML = '';
+
+        posts.forEach(post => {
+            const card = document.createElement('div');
+            card.className = 'news-card bg-white rounded-xl shadow-md overflow-hidden';
+
+            const categoryClasses = {
+                general: 'bg-gray-100 text-gray-800',
+                politics: 'bg-blue-100 text-blue-800',
+                sports: 'bg-green-100 text-green-800',
+                technology: 'bg-purple-100 text-purple-800',
+                entertainment: 'bg-pink-100 text-pink-800'
+            };
+
+            card.innerHTML = `
+                <img src="${post.image}" class="w-full h-48 object-cover" alt="${post.title}">
+                <div class="p-6">
+                    <div class="flex justify-between mb-2">
+                        <span class="tag ${categoryClasses[post.category] || ''}">${post.category}</span>
+                        <span class="text-xs text-gray-500">${post.date} at ${post.time}</span>
                     </div>
-                `;
-                
-                newsContainer.appendChild(card);
+                    <h3 class="text-xl font-bold mb-2">${post.title}</h3>
+                    <p class="text-gray-600">${post.content}</p>
+                    ${adminPassword.disabled ? `<button onclick="deletePost(${post.id})" class="mt-4 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+                        <i class="fas fa-trash mr-1"></i>Delete</button>` : ''}
+                </div>
+            `;
+            newsContainer.appendChild(card);
+        });
+    }
+
+    async function deletePost(postId) {
+        if (!adminPassword.disabled) {
+            alert('Only admin can delete posts.');
+            return;
+        }
+        if (confirm("Are you sure to delete this post?")) {
+            await fetch(`http://localhost:5000/posts/${postId}`, {
+                method: 'DELETE'
             });
+            await fetchPosts();
+        }
+    }
+
+    function filterRecent() {
+        return newsPosts.slice(0, 5);
+    }
+
+    function filterDaily() {
+        const today = new Date().toISOString().split('T')[0];
+        return newsPosts.filter(post => post.date === today);
+    }
+
+    function showSection(id, filterFn) {
+        newsFeedSection.classList.add('hidden');
+        aboutSection.classList.add('hidden');
+
+        if (id === 'newsFeed' && typeof filterFn === 'function') {
+            displayNewsPosts(filterFn());
+        } else if (id === 'newsFeed') {
+            displayNewsPosts();
         }
 
-        function filterRecent() {
-            return newsPosts.slice(0, 5); // Get latest 5 posts
-        }
+        document.getElementById(id).classList.remove('hidden');
 
-        function filterDaily() {
-            const today = new Date().toISOString().split('T')[0];
-            return newsPosts.filter(post => post.date === today);
-        }
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.classList.remove('text-blue-600', 'border-blue-600');
+            tab.classList.add('text-gray-600');
+        });
 
-        function showSection(sectionId, filterFn) {
-            // Hide all sections
-            newsFeedSection.classList.add('hidden');
-            aboutSection.classList.add('hidden');
-            
-            // Show selected section
-            const section = document.getElementById(sectionId);
-            section.classList.remove('hidden');
-            
-            // Update active tab styling
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active', 'text-blue-600', 'border-blue-600');
-                tab.classList.add('text-gray-600');
-            });
-            
-            // Update current tab styling
-            const currentTab = {
-                'newsFeed': homeTab,
-                'aboutSection': aboutTab
-            }[sectionId] || recentTab; // Default to recentTab if not mapped
-            
-            currentTab.classList.add('active', 'text-blue-600', 'border-blue-600');
-            currentTab.classList.remove('text-gray-600');
-            
-            // Display filtered posts if a filter function is provided
-            if (filterFn && sectionId === 'newsFeed') {
-                displayNewsPosts(filterFn());
-            }
-        }
+        const tabMap = {
+            newsFeed: homeTab,
+            aboutSection: aboutTab
+        };
 
-        function deletePost(postId) {
-            if (!adminPassword.disabled) {
-                alert('Only admin can delete posts');
-                return;
-            }
-            if (confirm('Are you sure you want to delete this post?')) {
-                newsPosts = newsPosts.filter(post => post.id !== postId);
-                displayNewsPosts();
-            }
-        }
-    </script>
+        const activeTab = tabMap[id] || homeTab;
+        activeTab.classList.remove('text-gray-600');
+        activeTab.classList.add('text-blue-600', 'border-blue-600');
+    }
+</script>
+
 </body>
 </html>
-
